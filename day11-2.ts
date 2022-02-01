@@ -17,24 +17,6 @@ const testData = `5483143223
 
 let octoGrid: number[][] = []
 
-const printWithColor = (grid: number[][]) => {
-  console.clear()
-
-  for (let row of grid) {
-    let rowString = ''
-
-    for (let cell of row) {
-      rowString += (cell === 0 || cell > 9) ? '0'.bold : `${cell}`.gray
-    }
-
-    console.log(rowString)
-  }
-}
-
-const sleep = (ms: number) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 const incrementOcto = async (x: number, y: number) => {
   if (octoGrid[y] !== undefined && octoGrid[y][x] !== undefined) {
     octoGrid[y][x]++
@@ -42,9 +24,9 @@ const incrementOcto = async (x: number, y: number) => {
     // When the value is 10, it means it's the first time during this step the value went over 9.
     // If we simply checked for cell > 9, it would repeat in a cycle forever.
     if (octoGrid[y][x] === 10) {
-      printWithColor(octoGrid)
+      // printWithColor(octoGrid)
       
-      await sleep(10)
+      // await sleep(10)
 
       await incrementOcto(x, y+1)
       await incrementOcto(x, y-1)
@@ -58,9 +40,7 @@ const incrementOcto = async (x: number, y: number) => {
   }
 }
 
-const countFlashes = async (data: string[]) => {
-  let flashesCount = 0
-  
+const countFlashes = async (data: string[]) => {  
   for (let row of data) {
     let lineOfNumbers: number[] = []
     
@@ -81,22 +61,24 @@ const countFlashes = async (data: string[]) => {
     }
 
     // After all the chain reactions are over, find any above 9 and set them back to 0.
+    let countAbove9 = 0
+
     for (let y = 0; y < octoGrid.length; y++) {
       for (let x = 0; x < octoGrid[0].length; x++) {
         if (octoGrid[y][x] > 9) {
+          countAbove9++
           octoGrid[y][x] = 0
-          flashesCount++
         }
       }
     }
 
-    printWithColor(octoGrid)
-
-    if (step < 99) {
-      await sleep(50)
+    // If every single grid point glowed, print the step it's on and exit.
+    if (countAbove9 === octoGrid.length * octoGrid[0].length) {
+      console.log(step + 1)
+      process.exit(0)
+    } else {
+      // Otherwise, continue looping until they all glow at once.
       doNextStep(step + 1)
-    } else { // exit condition
-      console.log(flashesCount)
     }
   }
 
